@@ -63,6 +63,10 @@ use windows::Win32::Foundation::{CloseHandle, HANDLE};
 use crate::virtual_display_manager;
 #[cfg(not(any(target_os = "ios")))]
 use std::collections::HashSet;
+
+#[cfg(feature = "simple_permissions")]
+use super::connection_permissions::*;
+
 pub type Sender = mpsc::UnboundedSender<(Instant, Arc<Message>)>;
 
 lazy_static::lazy_static! {
@@ -2310,6 +2314,14 @@ impl Connection {
                     if self.is_authed_view_camera_conn() {
                         return true;
                     }
+
+                    // FamilyDesk: Check mouse permission
+                    #[cfg(feature = "simple_permissions")]
+                    if !check_mouse_permission() {
+                        log::info!("🚫 Mouse blocked by FamilyDesk permissions for peer: {}", self.lr.my_name);
+                        return true;
+                    }
+
                     #[cfg(any(target_os = "android", target_os = "ios"))]
                     if let Err(e) = call_main_service_pointer_input("mouse", me.mask, me.x, me.y) {
                         log::debug!("call_main_service_pointer_input fail:{}", e);
@@ -2391,6 +2403,14 @@ impl Connection {
                     if self.is_authed_view_camera_conn() {
                         return true;
                     }
+
+                    // FamilyDesk: Check keyboard permission
+                    #[cfg(feature = "simple_permissions")]
+                    if !check_keyboard_permission() {
+                        log::info!("🚫 Keyboard blocked by FamilyDesk permissions for peer: {}", self.lr.my_name);
+                        return true;
+                    }
+
                     let key = match me.mode.enum_value() {
                         Ok(KeyboardMode::Map) => {
                             Some(crate::keyboard::keycode_to_rdev_key(me.chr()))
@@ -2446,6 +2466,14 @@ impl Connection {
                     if self.is_authed_view_camera_conn() {
                         return true;
                     }
+
+                    // FamilyDesk: Check keyboard permission
+                    #[cfg(feature = "simple_permissions")]
+                    if !check_keyboard_permission() {
+                        log::info!("🚫 Keyboard blocked by FamilyDesk permissions for peer: {}", self.lr.my_name);
+                        return true;
+                    }
+
                     if self.peer_keyboard_enabled() {
                         if is_enter(&me) {
                             CLICK_TIME.store(get_time(), Ordering::SeqCst);
@@ -2503,6 +2531,13 @@ impl Connection {
                     self.update_auto_disconnect_timer();
                 }
                 Some(message::Union::Clipboard(cb)) => {
+                    // FamilyDesk: Check clipboard permission
+                    #[cfg(feature = "simple_permissions")]
+                    if !check_clipboard_permission() {
+                        log::info!("🚫 Clipboard blocked by FamilyDesk permissions for peer: {}", self.lr.my_name);
+                        return true;
+                    }
+
                     if self.clipboard {
                         #[cfg(not(any(target_os = "android", target_os = "ios")))]
                         update_clipboard(vec![cb], ClipboardSide::Host);
@@ -2613,6 +2648,13 @@ impl Connection {
                     }
                 }
                 Some(message::Union::FileAction(fa)) => {
+                    // FamilyDesk: Check file transfer permission
+                    #[cfg(feature = "simple_permissions")]
+                    if !check_file_transfer_permission() {
+                        log::info!("🚫 File transfer blocked by FamilyDesk permissions for peer: {}", self.lr.my_name);
+                        return true;
+                    }
+
                     let mut handle_fa = self.file_transfer.is_some();
                     if !handle_fa {
                         if let Some(file_action::Union::Send(s)) = fa.union.as_ref() {

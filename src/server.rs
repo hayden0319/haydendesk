@@ -65,6 +65,8 @@ pub mod input_service {
 }
 
 mod connection;
+#[cfg(feature = "simple_permissions")]
+mod connection_permissions;
 pub mod display_service;
 #[cfg(windows)]
 pub mod portable_service;

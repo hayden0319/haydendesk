@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>FamilyDesk Remote Support</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            max-width: 550px;
+            margin: 30px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 26px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .device-id {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            letter-spacing: 3px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .info {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .permission-section {
+            margin: 25px 0;
+        }
+
+        .permission-section h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .permission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .permission-item:hover {
+            background: #e9ecef;
+        }
+
+        .permission-label {
+            font-size: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-enable {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-enable:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-disable {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-disable:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border 0.3s;
+        }
+
+        .modal input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal button {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        #authError {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+            font-size: 14px;
+        }
+
+        .locked-badge {
+            display: inline-block;
+            background: #ffc107;
+            color: #333;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🖥️ FamilyDesk Remote Support</h1>
+        <p class="subtitle">Secure Remote Access Control</p>
+
+        <div class="device-id" id="deviceId">Loading...</div>
+        <p class="info">📱 Share this ID with your support person</p>
+
+        <div class="permission-section">
+            <h2>🔐 Permissions <span class="locked-badge">API Protected</span></h2>
+
+            <div class="permission-item">
+                <span class="permission-label">
+                    🖱️ Mouse Control
+                </span>
+                <label class="toggle">
+                    <input type="checkbox" id="mouse" onchange="updatePermission('mouse')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="permission-item">
+                <span class="permission-label">
+                    ⌨️ Keyboard Control
+                </span>
+                <label class="toggle">
+                    <input type="checkbox" id="keyboard" onchange="updatePermission('keyboard')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="permission-item">
+                <span class="permission-label">
+                    📋 Clipboard
+                </span>
+                <label class="toggle">
+                    <input type="checkbox" id="clipboard" onchange="updatePermission('clipboard')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="permission-item">
+                <span class="permission-label">
+                    📁 File Transfer
+                </span>
+                <label class="toggle">
+                    <input type="checkbox" id="file" onchange="updatePermission('file')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="permission-item">
+                <span class="permission-label">
+                    🔊 Audio
+                </span>
+                <label class="toggle">
+                    <input type="checkbox" id="audio" onchange="updatePermission('audio')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-enable" onclick="enableAll()">✓ Enable All</button>
+            <button class="btn-disable" onclick="disableAll()">✗ Disable All</button>
+        </div>
+
+        <p class="info">🔒 All changes require authentication via API server</p>
+    </div>
+
+    <!-- Authentication Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>🔐 Authentication Required</h2>
+            <p id="modalMessage">Enter your account credentials to modify settings</p>
+
+            <input type="text" id="usernameInput" placeholder="Username" autocomplete="username">
+            <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password">
+
+            <div id="authError"></div>
+
+            <button class="btn-enable" onclick="submitPassword()">Submit</button>
+            <button class="btn-disable" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const { invoke } = window.__TAURI__.tauri;
+
+        let pendingAction = null;
+
+        async function loadDeviceId() {
+            try {
+                const id = await invoke('get_device_id');
+                document.getElementById('deviceId').textContent = id;
+            } catch (e) {
+                document.getElementById('deviceId').textContent = 'ERROR';
+                console.error('Failed to load device ID:', e);
+            }
+        }
+
+        async function loadPermissions() {
+            try {
+                const perms = await invoke('get_permissions');
+                document.getElementById('mouse').checked = perms.allow_mouse;
+                document.getElementById('keyboard').checked = perms.allow_keyboard;
+                document.getElementById('clipboard').checked = perms.allow_clipboard;
+                document.getElementById('file').checked = perms.allow_file_transfer;
+                document.getElementById('audio').checked = perms.allow_audio;
+            } catch (e) {
+                console.error('Failed to load permissions:', e);
+            }
+        }
+
+        async function updatePermission(type) {
+            const checked = document.getElementById(type).checked;
+            pendingAction = { type: 'permission', permType: type, enabled: checked };
+            showPasswordModal('Change ' + type + ' permission');
+        }
+
+        async function enableAll() {
+            pendingAction = { type: 'enableAll' };
+            showPasswordModal('Enable all permissions');
+        }
+
+        async function disableAll() {
+            pendingAction = { type: 'disableAll' };
+            showPasswordModal('Disable all permissions');
+        }
+
+        function showPasswordModal(message) {
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('passwordModal').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('usernameInput').focus();
+            }, 100);
+        }
+
+        function closeModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            pendingAction = null;
+            loadPermissions(); // Reload to reset toggles
+        }
+
+        async function submitPassword() {
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+
+            if (!username || !password) {
+                showError('Please enter both username and password');
+                return;
+            }
+
+            try {
+                // Verify credentials with API
+                const verification = await invoke('verify_settings_password', { username, password });
+
+                if (!verification.valid) {
+                    showError('Invalid credentials');
+                    return;
+                }
+
+                if (!verification.can_modify_settings) {
+                    showError('Your account cannot modify settings');
+                    return;
+                }
+
+                // Execute pending action
+                if (pendingAction) {
+                    if (pendingAction.type === 'permission') {
+                        await invoke('set_permission', {
+                            permType: pendingAction.permType,
+                            enabled: pendingAction.enabled,
+                            username,
+                            password
+                        });
+                    } else if (pendingAction.type === 'enableAll') {
+                        await invoke('enable_all_permissions', { username, password });
+                    } else if (pendingAction.type === 'disableAll') {
+                        await invoke('disable_all_permissions', { username, password });
+                    }
+                }
+
+                closeModal();
+                loadPermissions();
+
+            } catch (e) {
+                showError(String(e));
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('authError');
+            errorDiv.textContent = '⚠️ ' + message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Enter key submits
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('passwordModal').style.display === 'block') {
+                submitPassword();
+            } else if (e.key === 'Escape' && document.getElementById('passwordModal').style.display === 'block') {
+                closeModal();
+            }
+        });
+
+        // Click outside modal to close
+        window.onclick = function(event) {
+            const modal = document.getElementById('passwordModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Initialize
+        loadDeviceId();
+        loadPermissions();
+
+        // Auto-refresh permissions every 3 seconds
+        setInterval(loadPermissions, 3000);
+    </script>
+</body>
+</html>

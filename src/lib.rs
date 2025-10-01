@@ -76,3 +76,10 @@ pub mod privacy_mode;
 pub mod virtual_display_manager;
 
 mod kcp_stream;
+
+// FamilyDesk modules
+#[cfg(feature = "api_server")]
+pub mod api_server;
+#[cfg(feature = "simple_permissions")]
+pub mod simple_permissions;
+pub mod api_client;
