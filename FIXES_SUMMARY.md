@@ -90,18 +90,21 @@ src/server/connection_permissions.rs       - 權限執行
 
 ## 🔧 構建指令
 
-### 檢查語法
+### 推薦：使用構建腳本
 ```bash
 cd /Users/hayden/Downloads/haydendesk
-cargo check --features family_desk
+./build-familydesk.sh
 ```
 
-### 構建項目
+### 手動構建
 ```bash
+# 檢查語法
+cargo check --features family_desk
+
 # 開發版本
 cargo build --features family_desk
 
-# 發布版本
+# 發布版本（推薦）
 cargo build --release --features family_desk
 ```
 
@@ -109,6 +112,19 @@ cargo build --release --features family_desk
 ```bash
 cargo test --features family_desk
 ```
+
+### ⚠️ 重要提示
+
+**不要使用以下功能標誌：**
+```bash
+# ❌ 錯誤 - 需要額外依賴
+cargo build --features hwcodec,flutter,screencapturekit
+
+# ✅ 正確 - 只用 FamilyDesk 核心
+cargo build --features family_desk
+```
+
+詳見 `BUILD_TROUBLESHOOTING.md` 了解更多構建問題。
 
 ---
 
