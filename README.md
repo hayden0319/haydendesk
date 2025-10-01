@@ -42,7 +42,7 @@ Traditional remote desktop tools can be overwhelming for non-technical users. Fa
 | **API Authentication** | Centralized account management with JWT tokens |
 | **Permission Controls** | Toggle mouse, keyboard, clipboard, file transfer, audio |
 | **Master Password** | Admin-only access to settings modification |
-| **Server Failover** | Automatic retry across 1 primary + 5 backup servers |
+| **Server Failover** | Automatic retry across 1 primary + 5 standby servers |
 | **Simplified UI** | Large, accessible interface designed for elderly users |
 | **Role-Based Access** | Admin, family, and student roles with different permissions |
 | **Audit Logging** | Track all permission changes and blocked access attempts |
@@ -128,22 +128,22 @@ cargo tauri dev
 1. 🔑 Change default admin password
 2. 🔐 Configure HTTPS/TLS for API server
 3. 💾 Set up persistent database (currently in-memory)
-4. 🌐 Configure backup servers (5 slots available)
+4. 🌐 Configure standby servers (5 slots available)
 5. 🛡️ Review [CODE_REVIEW_AND_IMPROVEMENTS.md](CODE_REVIEW_AND_IMPROVEMENTS.md)
 
 ---
 
 ## ⚙️ Configuration
 
-### Configure Backup Servers
+### Configure Standby Servers
 
 Edit `src/api_server_config.rs` lines 54-83:
 
 ```rust
 ServerConfig {
-    url: "http://backup1.example.com:21114".to_string(),
+    url: "http://standby1.example.com:21114".to_string(),
     priority: 1,
-    enabled: true,  // Enable backup server!
+    enabled: true,  // Enable standby server!
 },
 ```
 
@@ -233,8 +233,8 @@ curl -X POST http://localhost:21114/api/set-permission \
 
 ```bash
 # Stop primary API server (Ctrl+C)
-# Client should automatically try backup servers
-# Check logs for: "Attempt 2/3 using server: http://backup1.example.com:21114"
+# Client should automatically try standby servers
+# Check logs for: "Attempt 2/3 using server: http://standby1.example.com:21114"
 ```
 
 ### Run Unit Tests
@@ -260,7 +260,7 @@ cargo test --features family_desk
 | Tauri UI | ✅ Complete |
 | Documentation | ✅ Complete |
 | Production Security | ⚠️ Requires hardening |
-| Backup Servers | ⚠️ Needs configuration |
+| Standby Servers | ⚠️ Needs configuration |
 
 **Code Statistics:**
 - Files Created: 17

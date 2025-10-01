@@ -325,7 +325,7 @@ cat CONNECTION_PERMISSION_ENFORCEMENT_PATCH.md
 
 **Next Actions:**
 - 🧪 Build and test the application
-- ⚙️ Configure the 5 backup servers
+- ⚙️ Configure the 5 standby servers
 - 🔒 Apply security hardening for production
 
 ---

@@ -1,8 +1,8 @@
 /// API Server Configuration with Fallback Support
-/// Provides automatic failover to backup servers
+/// Provides automatic failover to standby servers
 ///
 /// Features:
-/// - Primary server with 5 backup servers
+/// - Primary server with 5 standby servers
 /// - Automatic health checking
 /// - Failover when server is down
 /// - Load balancing (optional)
@@ -51,33 +51,33 @@ impl ServerManager {
                 priority: 0,
                 enabled: true,
             },
-            // Backup server 1 - CONFIGURE THIS
+            // Standby server 1 - CONFIGURE THIS
             ServerConfig {
-                url: "http://backup1.example.com:21114".to_string(),
+                url: "http://standby1.example.com:21114".to_string(),
                 priority: 1,
                 enabled: false, // Set to true when configured
             },
-            // Backup server 2 - CONFIGURE THIS
+            // Standby server 2 - CONFIGURE THIS
             ServerConfig {
-                url: "http://backup2.example.com:21114".to_string(),
+                url: "http://standby2.example.com:21114".to_string(),
                 priority: 2,
                 enabled: false, // Set to true when configured
             },
-            // Backup server 3 - CONFIGURE THIS
+            // Standby server 3 - CONFIGURE THIS
             ServerConfig {
-                url: "http://backup3.example.com:21114".to_string(),
+                url: "http://standby3.example.com:21114".to_string(),
                 priority: 3,
                 enabled: false, // Set to true when configured
             },
-            // Backup server 4 - CONFIGURE THIS
+            // Standby server 4 - CONFIGURE THIS
             ServerConfig {
-                url: "http://backup4.example.com:21114".to_string(),
+                url: "http://standby4.example.com:21114".to_string(),
                 priority: 4,
                 enabled: false, // Set to true when configured
             },
-            // Backup server 5 - CONFIGURE THIS
+            // Standby server 5 - CONFIGURE THIS
             ServerConfig {
-                url: "http://backup5.example.com:21114".to_string(),
+                url: "http://standby5.example.com:21114".to_string(),
                 priority: 5,
                 enabled: false, // Set to true when configured
             },

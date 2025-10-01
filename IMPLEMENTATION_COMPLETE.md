@@ -25,7 +25,7 @@ A complete RustDesk fork with the following features:
    - Audit logging for all blocked attempts
 
 3. **Server Failover System**
-   - Primary server + 5 backup servers
+   - Primary server + 5 standby servers
    - Automatic health checking (30-second intervals)
    - Intelligent failover with exponential backoff
    - Consecutive failure tracking
@@ -131,7 +131,7 @@ A complete RustDesk fork with the following features:
 
 ### 4. Single Point of Failure
 **Problem:** If `nas.haydenstudio.hk` server goes down, no fallback
-**Solution:** Primary + 5 backup servers with automatic health checking and failover
+**Solution:** Primary + 5 standby servers with automatic health checking and failover
 **Status:** ✅ Fixed
 
 ---
@@ -264,29 +264,29 @@ cargo tauri dev
 # Simulate primary server failure
 # Stop the API server (Ctrl+C)
 
-# RustDesk should automatically try backup servers
+# RustDesk should automatically try standby servers
 # Check logs for: "Request failed on http://nas.haydenstudio.hk:21114"
-# Check logs for: "Attempt 2/3 using server: http://backup1.example.com:21114"
+# Check logs for: "Attempt 2/3 using server: http://standby1.example.com:21114"
 ```
 
-Note: Configure backup servers first in `src/api_server_config.rs`
+Note: Configure standby servers first in `src/api_server_config.rs`
 
 ---
 
 ## ⚙️ Configuration
 
-### Configure Backup Servers
+### Configure Standby Servers
 
 Edit `src/api_server_config.rs` (lines 54-83):
 
 ```rust
-// Backup server 1
+// Standby server 1
 ServerConfig {
-    url: "http://your-backup1.example.com:21114".to_string(),
+    url: "http://your-standby1.example.com:21114".to_string(),
     priority: 1,
     enabled: true,  // Set to true!
 },
-// Repeat for backup servers 2-5
+// Repeat for standby servers 2-5
 ```
 
 ### Configure Permissions
@@ -437,7 +437,7 @@ cargo build --release --features family_desk
 - [ ] Rate limiting
 - [ ] Security hardening
 - [ ] Production testing
-- [ ] Backup server configuration
+- [ ] Standby server configuration
 
 ---
 
@@ -518,7 +518,7 @@ Client → retry_with_failover()
 1. No audio permission check implemented (stub exists)
 2. In-memory account storage (not persistent)
 3. No token refresh mechanism
-4. Backup servers need manual configuration
+4. Standby servers need manual configuration
 5. No UI for account management (API only)
 
 ### Won't Fix (By Design)
@@ -557,7 +557,7 @@ Client → retry_with_failover()
 You now have:
 - ✅ Fully functional API-based authentication
 - ✅ Working permission enforcement (not decorative!)
-- ✅ Server failover with 5 backup slots
+- ✅ Server failover with 5 standby server slots
 - ✅ Performance-optimized with connection pooling
 - ✅ Audit logging for security
 - ✅ Simplified UI for elderly users
@@ -565,7 +565,7 @@ You now have:
 
 **Next steps:**
 1. Build and test
-2. Configure backup servers
+2. Configure standby servers
 3. Apply security hardening
 4. Deploy to production
 
