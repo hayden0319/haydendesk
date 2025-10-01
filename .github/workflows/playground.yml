@@ -71,10 +71,9 @@ jobs:
             }
 
     steps:
-      - name: "Checkout source code (Ref: ${{ matrix.job.ref }})"
+      - name: "Checkout source code (Current Branch)"
         uses: actions/checkout@v3
         with:
-          ref: ${{ matrix.job.ref }}
           submodules: recursive
 
       - name: Install build dependencies

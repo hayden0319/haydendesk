@@ -1,0 +1,94 @@
+name: Build FamilyDesk
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+env:
+  RUST_VERSION: "1.75"
+  VERSION: "1.4.2"
+  RS_PUB_KEY: "iQX+6aUbS40CL9jJElm4jSMs8aKzePqMsFH1HACDI5E="
+  RENDEZVOUS_SERVER: "nas.haydenstudio.hk"
+  API_SERVER: "http://nas.haydenstudio.hk:21114"
+
+jobs:
+  build-macos:
+    name: "Build FamilyDesk for macOS"
+    runs-on: macos-13
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          override: true
+
+      - name: Install build dependencies
+        run: |
+          brew install llvm nasm pkg-config
+
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
+
+      - name: Install vcpkg dependencies
+        run: |
+          cd vcpkg
+          ./vcpkg install libvpx libyuv opus aom
+
+      - name: Build FamilyDesk (Core Features)
+        run: |
+          cargo build --features family_desk --release
+
+      - name: Verify build
+        run: |
+          ls -lh target/release/rustdesk
+          file target/release/rustdesk
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: familydesk-macos-${{ env.VERSION }}
+          path: target/release/rustdesk
+
+  check-code:
+    name: "Check Code Quality"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          components: rustfmt, clippy
+          override: true
+
+      - name: Run cargo check
+        run: cargo check --features family_desk
+
+      - name: Run cargo fmt check
+        run: cargo fmt -- --check
+        continue-on-error: true
+
+      - name: Run cargo clippy
+        run: cargo clippy --features family_desk -- -D warnings
+        continue-on-error: true
