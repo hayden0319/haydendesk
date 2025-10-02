@@ -64,8 +64,8 @@ if [[ "$OS" == "macOS" ]]; then
     fi
 
     # 安裝依賴
-    echo "📦 安裝構建依賴: llvm, nasm, pkg-config"
-    brew install llvm nasm pkg-config
+    echo "📦 安裝構建依賴..."
+    brew install llvm nasm pkg-config glib gtk+3 cairo pango atk gdk-pixbuf
 
 elif [[ "$OS" == "Linux" ]]; then
     # 檢測 Linux 發行版
@@ -87,6 +87,16 @@ elif [[ "$OS" == "Linux" ]]; then
 fi
 
 echo "✅ 系統依賴安裝完成"
+
+# 設置 PKG_CONFIG_PATH (macOS)
+if [[ "$OS" == "macOS" ]]; then
+    if command -v brew &> /dev/null; then
+        BREW_PREFIX=$(brew --prefix)
+        export PKG_CONFIG_PATH="$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+        echo "✅ PKG_CONFIG_PATH 已設置: $PKG_CONFIG_PATH"
+    fi
+fi
+
 echo ""
 
 # ============================================================
@@ -195,6 +205,18 @@ if grep -q ".cargo/env" "$SHELL_RC" 2>/dev/null; then
 else
     echo "📝 添加 Rust 環境到 $SHELL_RC"
     echo "source \$HOME/.cargo/env" >> "$SHELL_RC"
+fi
+
+# 檢查 PKG_CONFIG_PATH (macOS)
+if [[ "$OS" == "macOS" ]]; then
+    if ! grep -q "PKG_CONFIG_PATH" "$SHELL_RC" 2>/dev/null; then
+        echo "📝 添加 PKG_CONFIG_PATH 到 $SHELL_RC"
+        BREW_PREFIX=$(brew --prefix 2>/dev/null || echo "/opt/homebrew")
+        echo "export PKG_CONFIG_PATH=\"$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig\${PKG_CONFIG_PATH:+:\$PKG_CONFIG_PATH}\"" >> "$SHELL_RC"
+        echo "✅ 已添加 PKG_CONFIG_PATH"
+    else
+        echo "✅ PKG_CONFIG_PATH 已配置"
+    fi
 fi
 
 echo ""
