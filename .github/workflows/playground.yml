@@ -17,7 +17,7 @@ env:
 
 jobs:
   build-macos-matrix:
-    name: Build macOS - ${{ matrix.job.flutter }} - ${{ matrix.job.date }}
+    name: "Build macOS - ${{ matrix.job.flutter }} - ${{ matrix.job.date }}"
     runs-on: macos-13
     permissions:
       contents: write
@@ -71,7 +71,7 @@ jobs:
             }
 
     steps:
-      - name: Checkout source code (Ref: ${{ matrix.job.ref }})
+      - name: "Checkout source code (Ref: ${{ matrix.job.ref }})"
         uses: actions/checkout@v3
         with:
           ref: ${{ matrix.job.ref }}
@@ -81,7 +81,7 @@ jobs:
         run: |
           brew install llvm create-dmg nasm pkg-config
 
-      - name: Setup Flutter ${{ matrix.job.flutter }}
+      - name: "Setup Flutter ${{ matrix.job.flutter }}"
         uses: actions/setup-flutter@v2
         with:
           flutter-version: ${{ matrix.job.flutter }}
