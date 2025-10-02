@@ -16,7 +16,6 @@ env:
   RENDEZVOUS_SERVER: "nas.haydenstudio.hk"
   API_SERVER: "http://nas.haydenstudio.hk:21114"
   VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
-  PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
 
 jobs:
   build-linux:
@@ -59,11 +58,10 @@ jobs:
           echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
 
       - name: Verify pkg-config setup
+        env:
+          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
         run: |
           echo "🔍 Verifying pkg-config can find libraries..."
-
-          # 显式设置并导出
-          export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
 
           # 查找 glib-2.0.pc 文件位置
@@ -83,6 +81,7 @@ jobs:
               echo "✅ $lib found (version: $(pkg-config --modversion $lib))"
             else
               echo "❌ $lib NOT found"
+              exit 1
             fi
           done
 
@@ -91,9 +90,10 @@ jobs:
           $VCPKG_ROOT/vcpkg install --triplet x64-linux
 
       - name: Build FamilyDesk (Core Features)
+        env:
+          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
+          PKG_CONFIG_ALLOW_SYSTEM_CFLAGS: "1"
         run: |
-          # 显式导出环境变量
-          export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
 
           # 验证 pkg-config 可以找到 glib
@@ -101,8 +101,7 @@ jobs:
           pkg-config --modversion glib-2.0
           pkg-config --cflags glib-2.0
 
-          # 构建 - 尝试不使用 GUI 相关特性
-          # 如果 family_desk 需要完整的 GUI，则需要完整的依赖
+          # 构建
           cargo build --features family_desk --release
 
       - name: Verify build
