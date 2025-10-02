@@ -16,6 +16,7 @@ env:
   RENDEZVOUS_SERVER: "nas.haydenstudio.hk"
   API_SERVER: "http://nas.haydenstudio.hk:21114"
   VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
+  PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
 
 jobs:
   build-linux:
@@ -58,19 +59,22 @@ jobs:
           ./bootstrap-vcpkg.sh
           echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
 
-      - name: Set PKG_CONFIG_PATH
-        run: |
-          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig" >> $GITHUB_ENV
-          echo "✅ PKG_CONFIG_PATH set"
-
       - name: Verify pkg-config setup
         run: |
           echo "🔍 Verifying pkg-config can find libraries..."
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+
+          # 查找 glib-2.0.pc 文件位置
+          echo "📁 Searching for glib-2.0.pc..."
+          find /usr -name "glib-2.0.pc" 2>/dev/null || echo "Not found in /usr"
+
           for lib in glib-2.0 gtk+-3.0; do
             if pkg-config --exists $lib; then
               echo "✅ $lib found (version: $(pkg-config --modversion $lib))"
             else
               echo "❌ $lib NOT found"
+              echo "Available .pc files:"
+              ls /usr/lib/x86_64-linux-gnu/pkgconfig/*.pc 2>/dev/null | head -10
               exit 1
             fi
           done
@@ -81,6 +85,8 @@ jobs:
 
       - name: Build FamilyDesk (Core Features)
         run: |
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+          pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found before build" || echo "❌ glib-2.0 NOT found"
           cargo build --features family_desk --release
 
       - name: Verify build
