@@ -51,6 +51,17 @@ jobs:
             libpam0g-dev libcairo2-dev libpango1.0-dev \
             libatk1.0-dev libgdk-pixbuf2.0-dev
 
+          # 验证包已安装
+          echo ""
+          echo "✅ Verifying installed packages:"
+          dpkg -l | grep -E "libglib2.0-dev|libgtk-3-dev"
+
+          # 立即验证 .pc 文件是否存在
+          echo ""
+          echo "📁 Checking for .pc files:"
+          ls -la /usr/lib/x86_64-linux-gnu/pkgconfig/glib-2.0.pc || echo "❌ glib-2.0.pc not found!"
+          ls -la /usr/lib/x86_64-linux-gnu/pkgconfig/gtk+-3.0.pc || echo "❌ gtk+-3.0.pc not found!"
+
       - name: Setup vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg
@@ -62,20 +73,28 @@ jobs:
       - name: Verify pkg-config setup
         run: |
           echo "🔍 Verifying pkg-config can find libraries..."
+
+          # 显式设置并导出
+          export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
 
           # 查找 glib-2.0.pc 文件位置
+          echo ""
           echo "📁 Searching for glib-2.0.pc..."
-          find /usr -name "glib-2.0.pc" 2>/dev/null || echo "Not found in /usr"
+          find /usr -name "glib-2.0.pc" 2>/dev/null | head -5
 
+          # 列出 pkgconfig 目录内容
+          echo ""
+          echo "📋 Contents of /usr/lib/x86_64-linux-gnu/pkgconfig:"
+          ls -la /usr/lib/x86_64-linux-gnu/pkgconfig/glib*.pc 2>/dev/null || echo "No glib*.pc files found"
+
+          # 测试 pkg-config
+          echo ""
           for lib in glib-2.0 gtk+-3.0; do
             if pkg-config --exists $lib; then
               echo "✅ $lib found (version: $(pkg-config --modversion $lib))"
             else
               echo "❌ $lib NOT found"
-              echo "Available .pc files:"
-              ls /usr/lib/x86_64-linux-gnu/pkgconfig/*.pc 2>/dev/null | head -10
-              exit 1
             fi
           done
 
@@ -85,8 +104,17 @@ jobs:
 
       - name: Build FamilyDesk (Core Features)
         run: |
+          # 显式导出环境变量
+          export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-          pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found before build" || echo "❌ glib-2.0 NOT found"
+
+          # 验证 pkg-config 可以找到 glib
+          pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found" || (echo "❌ glib-2.0 NOT found" && exit 1)
+          pkg-config --modversion glib-2.0
+          pkg-config --cflags glib-2.0
+
+          # 构建 - 尝试不使用 GUI 相关特性
+          # 如果 family_desk 需要完整的 GUI，则需要完整的依赖
           cargo build --features family_desk --release
 
       - name: Verify build
