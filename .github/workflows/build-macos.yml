@@ -75,20 +75,20 @@ jobs:
           # 不需要手動指定包，vcpkg 會自動讀取 vcpkg.json
           $VCPKG_ROOT/vcpkg install --triplet x64-osx
 
-      - name: Build FamilyDesk (Core Features)
+      - name: Set build environment
         run: |
-          # 动态检测 Homebrew 前缀
           BREW_PREFIX=$(brew --prefix)
-          export PKG_CONFIG_PATH="$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig:$BREW_PREFIX/opt/glib/lib/pkgconfig:$BREW_PREFIX/opt/gtk+3/lib/pkgconfig:$BREW_PREFIX/opt/cairo/lib/pkgconfig"
-          export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+          echo "PKG_CONFIG_PATH=$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig:$BREW_PREFIX/opt/glib/lib/pkgconfig:$BREW_PREFIX/opt/gtk+3/lib/pkgconfig:$BREW_PREFIX/opt/cairo/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1" >> $GITHUB_ENV
 
-          echo "BREW_PREFIX=$BREW_PREFIX"
+      - name: Verify build environment
+        run: |
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-
-          # 验证 pkg-config 可以找到 glib
           pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found" || (echo "❌ glib-2.0 NOT found" && exit 1)
           pkg-config --modversion glib-2.0
 
+      - name: Build FamilyDesk (Core Features)
+        run: |
           cargo build --features family_desk --release
 
       - name: Verify build
