@@ -52,7 +52,7 @@ jobs:
   build-macos:
     needs: check-platforms
     if: needs.check-platforms.outputs.build-macos == 'true'
-    uses: ./.github/workflows/build-familydesk.yml
+    uses: ./.github/workflows/build-macos.yml
     secrets: inherit
 
   build-windows:
