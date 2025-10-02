@@ -10,7 +10,7 @@ The PKG_CONFIG_PATH environment variable is not set.
 
 ## ✅ 解决方案
 
-使用 `>> $GITHUB_ENV` 来设置环境变量，而不是在步骤内使用 `export`。
+**双重保险策略**：既使用 `>> $GITHUB_ENV` 设置全局环境变量，又在构建步骤中 `export` 确保 cargo 子进程可以访问。
 
 ### 修复前（❌ 不工作）:
 ```yaml
@@ -27,10 +27,19 @@ The PKG_CONFIG_PATH environment variable is not set.
     echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig" >> $GITHUB_ENV
     echo "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1" >> $GITHUB_ENV
 
+- name: Verify environment
+  run: |
+    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+    pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found"
+
 - name: Build
   run: |
+    export PKG_CONFIG_PATH=/usr/lib/pkgconfig
+    export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
     cargo build --release
 ```
+
+**关键发现**：即使使用了 `>> $GITHUB_ENV`，cargo build 的子进程有时仍然无法访问环境变量。因此需要在构建步骤内再次 `export`。
 
 ---
 
@@ -58,6 +67,9 @@ The PKG_CONFIG_PATH environment variable is not set.
 
 - name: Build FamilyDesk
   run: |
+    BREW_PREFIX=$(brew --prefix)
+    export PKG_CONFIG_PATH=$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig:$BREW_PREFIX/opt/glib/lib/pkgconfig:$BREW_PREFIX/opt/gtk+3/lib/pkgconfig:$BREW_PREFIX/opt/cairo/lib/pkgconfig
+    export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
     cargo build --features family_desk --release
 ```
 
@@ -65,6 +77,7 @@ The PKG_CONFIG_PATH environment variable is not set.
 - ✅ 动态检测 Homebrew 路径 (`brew --prefix`)
 - ✅ 支持 Intel Mac (`/usr/local`) 和 Apple Silicon (`/opt/homebrew`)
 - ✅ 使用 `>> $GITHUB_ENV` 设置环境变量
+- ✅ **在构建步骤中再次 export（双重保险）**
 
 ---
 
@@ -91,8 +104,15 @@ The PKG_CONFIG_PATH environment variable is not set.
       pkg-config --exists $lib && echo "✅ $lib found"
     done
 
+- name: Verify environment before build
+  run: |
+    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+    pkg-config --exists glib-2.0 && echo "✅ glib-2.0 accessible"
+
 - name: Build FamilyDesk
   run: |
+    export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
+    export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
     cargo build --features family_desk --release
 ```
 
@@ -100,6 +120,7 @@ The PKG_CONFIG_PATH environment variable is not set.
 - ✅ 第一行安装 `libglib2.0-dev pkg-config`
 - ✅ 标准的 Ubuntu pkgconfig 路径
 - ✅ 验证步骤确保库可用
+- ✅ **在构建步骤中再次 export（双重保险）**
 
 ---
 
@@ -118,9 +139,16 @@ The PKG_CONFIG_PATH environment variable is not set.
     echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig" >> $GITHUB_ENV
     echo "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1" >> $GITHUB_ENV
 
+- name: Verify environment before build
+  run: |
+    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+    pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found"
+
 - name: Build Flutter Android App
   working-directory: flutter
   run: |
+    export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
+    export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
     flutter pub get
     flutter build apk --release
 ```
@@ -128,6 +156,7 @@ The PKG_CONFIG_PATH environment variable is not set.
 **关键点：**
 - ✅ 添加了 `libglib2.0-dev pkg-config`
 - ✅ 设置环境变量（Flutter 可能需要）
+- ✅ **在构建步骤中再次 export（双重保险）**
 
 ---
 

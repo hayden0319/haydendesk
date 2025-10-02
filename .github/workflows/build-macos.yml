@@ -89,6 +89,9 @@ jobs:
 
       - name: Build FamilyDesk (Core Features)
         run: |
+          BREW_PREFIX=$(brew --prefix)
+          export PKG_CONFIG_PATH=$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig:$BREW_PREFIX/opt/glib/lib/pkgconfig:$BREW_PREFIX/opt/gtk+3/lib/pkgconfig:$BREW_PREFIX/opt/cairo/lib/pkgconfig
+          export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
           cargo build --features family_desk --release
 
       - name: Verify build

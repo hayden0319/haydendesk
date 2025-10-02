@@ -81,8 +81,17 @@ jobs:
         run: |
           $VCPKG_ROOT/vcpkg install --triplet x64-linux
 
+      - name: Verify environment before build
+        run: |
+          echo "🔍 Final environment check before build..."
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+          echo "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=$PKG_CONFIG_ALLOW_SYSTEM_CFLAGS"
+          pkg-config --exists glib-2.0 && echo "✅ glib-2.0 accessible" || (echo "❌ glib-2.0 NOT accessible" && exit 1)
+
       - name: Build FamilyDesk (Core Features)
         run: |
+          export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
+          export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
           cargo build --features family_desk --release
 
       - name: Verify build

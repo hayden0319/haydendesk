@@ -85,9 +85,17 @@ jobs:
           echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig" >> $GITHUB_ENV
           echo "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1" >> $GITHUB_ENV
 
+      - name: Verify environment before build
+        run: |
+          echo "🔍 Environment check before build..."
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+          pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found" || echo "⚠️ glib-2.0 not found (may not be needed for Flutter)"
+
       - name: Build Flutter Android App
         working-directory: flutter
         run: |
+          export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
+          export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
           flutter pub get
           flutter build apk --release --target-platform android-arm64
 
