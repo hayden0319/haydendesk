@@ -10,7 +10,7 @@ on:
   pull_request:
 
 env:
-  RUST_VERSION: "1.75"
+  RUST_VERSION: "1.81"  # Required for iOS (cargo-lipo dependencies need 1.81+)
   VERSION: "1.4.2"
   RS_PUB_KEY: "iQX+6aUbS40CL9jJElm4jSMs8aKzePqMsFH1HACDI5E="
   RENDEZVOUS_SERVER: "nas.haydenstudio.hk"

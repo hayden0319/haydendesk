@@ -49,6 +49,9 @@ The PKG_CONFIG_PATH environment variable is not set.
 
 **修改步骤：**
 ```yaml
+env:
+  RUST_VERSION: "1.81"  # Required for macOS (cidre and other deps need 1.81+)
+
 - name: Install dependencies
   run: |
     brew install llvm nasm pkg-config glib gtk+3 cairo pango atk gdk-pixbuf
@@ -74,6 +77,7 @@ The PKG_CONFIG_PATH environment variable is not set.
 ```
 
 **关键点：**
+- ✅ **升级 Rust 到 1.81**（macOS 依赖如 cidre 需要）
 - ✅ 动态检测 Homebrew 路径 (`brew --prefix`)
 - ✅ 支持 Intel Mac (`/usr/local`) 和 Apple Silicon (`/opt/homebrew`)
 - ✅ 使用 `>> $GITHUB_ENV` 设置环境变量
@@ -164,9 +168,16 @@ The PKG_CONFIG_PATH environment variable is not set.
 
 **修改步骤：**
 ```yaml
+env:
+  RUST_VERSION: "1.81"  # Required for iOS (cargo-lipo dependencies need 1.81+)
+
 - name: Install build dependencies
   run: |
     brew install pkg-config || echo "pkg-config already installed"
+
+- name: Install cargo-lipo
+  run: |
+    cargo install cargo-lipo
 
 - name: Build iOS app
   working-directory: flutter
@@ -175,8 +186,11 @@ The PKG_CONFIG_PATH environment variable is not set.
 ```
 
 **关键点：**
+- ✅ **升级 Rust 到 1.81**（cargo-lipo 依赖需要）
 - ✅ 安装 pkg-config（防御性）
 - ✅ Flutter 处理大部分依赖
+
+**重要**：iOS 需要 Rust 1.81+ 因为 `cargo-lipo` 的依赖（如 `addr2line v0.25.1`）要求更新的 Rust 版本。
 
 ---
 
@@ -293,6 +307,24 @@ cargo build --features family_desk --release
 - GitHub Actions 环境变量: https://docs.github.com/en/actions/learn-github-actions/variables
 - pkg-config 文档: https://people.freedesktop.org/~dbn/pkg-config-guide.html
 - RustDesk 原始 workflows: `/Users/hayden/Downloads/rustdesk2-main/.github/workflows/`
+
+---
+
+## 🔧 Rust 版本要求
+
+### macOS & iOS: 1.81+
+- **原因**: cargo-lipo 依赖（如 addr2line v0.25.1）需要 rustc 1.81+
+- **参考**: RustDesk 原始项目对 macOS 使用 `MAC_RUST_VERSION: "1.81"`
+
+### Linux, Windows, Android: 1.75
+- **原因**: 兼容 Sciter 和现有依赖
+- **参考**: RustDesk 原始项目使用 `RUST_VERSION: "1.75"`
+
+### 版本说明
+根据 RustDesk 官方讨论：
+- 1.75 是推荐版本（https://github.com/rustdesk/rustdesk/discussions/7503）
+- 1.78 有 ABI 变化导致 Sciter 版本不兼容
+- macOS/iOS 必须使用 1.81+ 因为 cidre 等依赖要求
 
 ---
 
