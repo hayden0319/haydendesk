@@ -57,25 +57,17 @@ jobs:
           ./bootstrap-vcpkg.sh
           echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
 
+      - name: Set build environment
+        run: |
+          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1" >> $GITHUB_ENV
+
       - name: Verify pkg-config setup
-        env:
-          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
         run: |
           echo "🔍 Verifying pkg-config can find libraries..."
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
 
-          # 查找 glib-2.0.pc 文件位置
-          echo ""
-          echo "📁 Searching for glib-2.0.pc..."
-          find /usr -name "glib-2.0.pc" 2>/dev/null | head -5
-
-          # 列出 pkgconfig 目录内容
-          echo ""
-          echo "📋 Contents of /usr/lib/x86_64-linux-gnu/pkgconfig:"
-          ls -la /usr/lib/x86_64-linux-gnu/pkgconfig/glib*.pc 2>/dev/null || echo "No glib*.pc files found"
-
           # 测试 pkg-config
-          echo ""
           for lib in glib-2.0 gtk+-3.0; do
             if pkg-config --exists $lib; then
               echo "✅ $lib found (version: $(pkg-config --modversion $lib))"
@@ -90,18 +82,7 @@ jobs:
           $VCPKG_ROOT/vcpkg install --triplet x64-linux
 
       - name: Build FamilyDesk (Core Features)
-        env:
-          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
-          PKG_CONFIG_ALLOW_SYSTEM_CFLAGS: "1"
         run: |
-          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-
-          # 验证 pkg-config 可以找到 glib
-          pkg-config --exists glib-2.0 && echo "✅ glib-2.0 found" || (echo "❌ glib-2.0 NOT found" && exit 1)
-          pkg-config --modversion glib-2.0
-          pkg-config --cflags glib-2.0
-
-          # 构建
           cargo build --features family_desk --release
 
       - name: Verify build

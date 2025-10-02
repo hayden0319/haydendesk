@@ -80,6 +80,11 @@ jobs:
           ./bootstrap-vcpkg.sh
           echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
 
+      - name: Set build environment
+        run: |
+          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1" >> $GITHUB_ENV
+
       - name: Build Flutter Android App
         working-directory: flutter
         run: |
