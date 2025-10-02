@@ -1,0 +1,103 @@
+name: Build FamilyDesk - All Platforms
+
+on:
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: '选择要构建的平台 (用逗号分隔: macos,windows,linux,android,ios 或 all)'
+        required: true
+        default: 'all'
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [created]
+
+env:
+  RUST_VERSION: "1.75"
+  VERSION: "1.4.2"
+  RS_PUB_KEY: "iQX+6aUbS40CL9jJElm4jSMs8aKzePqMsFH1HACDI5E="
+  RENDEZVOUS_SERVER: "nas.haydenstudio.hk"
+  API_SERVER: "http://nas.haydenstudio.hk:21114"
+
+jobs:
+  # 检查要构建哪些平台
+  check-platforms:
+    runs-on: ubuntu-latest
+    outputs:
+      build-macos: ${{ steps.check.outputs.macos }}
+      build-windows: ${{ steps.check.outputs.windows }}
+      build-linux: ${{ steps.check.outputs.linux }}
+      build-android: ${{ steps.check.outputs.android }}
+      build-ios: ${{ steps.check.outputs.ios }}
+    steps:
+      - id: check
+        run: |
+          INPUT="${{ github.event.inputs.platforms || 'all' }}"
+          if [ "$INPUT" = "all" ]; then
+            echo "macos=true" >> $GITHUB_OUTPUT
+            echo "windows=true" >> $GITHUB_OUTPUT
+            echo "linux=true" >> $GITHUB_OUTPUT
+            echo "android=true" >> $GITHUB_OUTPUT
+            echo "ios=true" >> $GITHUB_OUTPUT
+          else
+            [[ "$INPUT" =~ "macos" ]] && echo "macos=true" >> $GITHUB_OUTPUT || echo "macos=false" >> $GITHUB_OUTPUT
+            [[ "$INPUT" =~ "windows" ]] && echo "windows=true" >> $GITHUB_OUTPUT || echo "windows=false" >> $GITHUB_OUTPUT
+            [[ "$INPUT" =~ "linux" ]] && echo "linux=true" >> $GITHUB_OUTPUT || echo "linux=false" >> $GITHUB_OUTPUT
+            [[ "$INPUT" =~ "android" ]] && echo "android=true" >> $GITHUB_OUTPUT || echo "android=false" >> $GITHUB_OUTPUT
+            [[ "$INPUT" =~ "ios" ]] && echo "ios=true" >> $GITHUB_OUTPUT || echo "ios=false" >> $GITHUB_OUTPUT
+          fi
+
+  # 调用各平台的构建 workflow
+  build-macos:
+    needs: check-platforms
+    if: needs.check-platforms.outputs.build-macos == 'true'
+    uses: ./.github/workflows/build-familydesk.yml
+    secrets: inherit
+
+  build-windows:
+    needs: check-platforms
+    if: needs.check-platforms.outputs.build-windows == 'true'
+    uses: ./.github/workflows/build-windows.yml
+    secrets: inherit
+
+  build-linux:
+    needs: check-platforms
+    if: needs.check-platforms.outputs.build-linux == 'true'
+    uses: ./.github/workflows/build-linux.yml
+    secrets: inherit
+
+  build-android:
+    needs: check-platforms
+    if: needs.check-platforms.outputs.build-android == 'true'
+    uses: ./.github/workflows/build-android.yml
+    secrets: inherit
+
+  build-ios:
+    needs: check-platforms
+    if: needs.check-platforms.outputs.build-ios == 'true'
+    uses: ./.github/workflows/build-ios.yml
+    secrets: inherit
+
+  # 创建发布总结
+  summary:
+    needs: [check-platforms, build-macos, build-windows, build-linux, build-android, build-ios]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Summary
+        run: |
+          echo "## FamilyDesk 构建完成" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 构建结果:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 平台 | 状态 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS | ${{ needs.build-macos.result || '跳过' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows | ${{ needs.build-windows.result || '跳过' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux | ${{ needs.build-linux.result || '跳过' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Android | ${{ needs.build-android.result || '跳过' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| iOS | ${{ needs.build-ios.result || '跳过' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 下载产物:" >> $GITHUB_STEP_SUMMARY
+          echo "在本次运行的 Artifacts 部分下载各平台的构建产物" >> $GITHUB_STEP_SUMMARY

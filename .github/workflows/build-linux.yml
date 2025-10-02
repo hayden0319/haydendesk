@@ -1,0 +1,95 @@
+name: Build FamilyDesk - Linux
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+env:
+  RUST_VERSION: "1.75"
+  VERSION: "1.4.2"
+  RS_PUB_KEY: "iQX+6aUbS40CL9jJElm4jSMs8aKzePqMsFH1HACDI5E="
+  RENDEZVOUS_SERVER: "nas.haydenstudio.hk"
+  API_SERVER: "http://nas.haydenstudio.hk:21114"
+  VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
+
+jobs:
+  build-linux:
+    name: "Build FamilyDesk for Linux (Ubuntu)"
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          override: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc git curl wget nasm yasm \
+            libgtk-3-dev clang libxcb-randr0-dev libxdo-dev \
+            libxfixes-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+            libasound2-dev libpulse-dev cmake \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            libpam0g-dev pkg-config
+
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          cd vcpkg
+          git checkout ${{ env.VCPKG_COMMIT_ID }}
+          ./bootstrap-vcpkg.sh
+          echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
+
+      - name: Install vcpkg dependencies
+        run: |
+          $VCPKG_ROOT/vcpkg install --triplet x64-linux
+
+      - name: Build FamilyDesk (Core Features)
+        run: |
+          cargo build --features family_desk --release
+
+      - name: Verify build
+        run: |
+          ls -lh target/release/rustdesk
+          file target/release/rustdesk
+          ldd target/release/rustdesk
+
+      - name: Create AppImage (Optional)
+        run: |
+          # 创建 AppDir 结构
+          mkdir -p AppDir/usr/bin
+          cp target/release/rustdesk AppDir/usr/bin/
+
+          # 创建 desktop 文件
+          cat > AppDir/familydesk.desktop << EOF
+          [Desktop Entry]
+          Name=FamilyDesk
+          Exec=rustdesk
+          Icon=rustdesk
+          Type=Application
+          Categories=Network;RemoteAccess;
+          EOF
+
+          echo "AppImage structure created (需要 appimagetool 才能打包)"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: familydesk-linux-${{ env.VERSION }}
+          path: target/release/rustdesk

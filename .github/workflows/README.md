@@ -1,184 +1,316 @@
 # GitHub Actions Workflows
 
-## ✅ 唯一可用的 Workflow
+## 📋 可用的 Workflows
 
-### `build-familydesk.yml` - FamilyDesk 構建
+FamilyDesk 支持多平台构建，每个平台都有独立的 workflow：
 
-**用途:** 構建 FamilyDesk macOS 版本
+### 🖥️ 桌面平台
 
-**特點:**
-- ✅ 只構建 FamilyDesk 核心功能
-- ✅ 使用當前分支代碼
-- ✅ 包含所有必需依賴 (glib, gtk+3, cairo)
-- ✅ 正確設置 PKG_CONFIG_PATH
-- ✅ 使用 vcpkg manifest 模式
-- ✅ 自動上傳構建產物
+#### 1. `build-macos.yml` - macOS 构建
+- **支持:** macOS (Intel & Apple Silicon)
+- **产物:** `familydesk-macos-1.4.2`
+- **Runner:** macos-13
 
-**觸發條件:**
-- 手動觸發（workflow_dispatch）
-- Push 到 main/master 分支
-- Pull Request
+#### 2. `build-windows.yml` - Windows 构建
+- **支持:** Windows x64
+- **产物:** `familydesk-windows-1.4.2` (.exe)
+- **Runner:** windows-2022
 
-**如何使用:**
-1. 進入 GitHub 倉庫
-2. 點擊 "Actions" 標籤
-3. 選擇 "Build FamilyDesk"
-4. 點擊 "Run workflow"
-5. 選擇分支
-6. 點擊綠色的 "Run workflow" 按鈕
-7. 等待構建完成（約 15-30 分鐘）
-8. 下載構建產物
+#### 3. `build-linux.yml` - Linux 构建
+- **支持:** Ubuntu/Debian x64
+- **产物:** `familydesk-linux-1.4.2`
+- **Runner:** ubuntu-20.04
 
-**構建產物:**
-- `familydesk-macos-1.4.2` - macOS 可執行文件
+### 📱 移动平台
 
----
+#### 4. `build-android.yml` - Android 构建
+- **支持:** Android (ARM64, ARMv7, x64)
+- **产物:**
+  - APK: `familydesk-android-1.4.2`
+  - AAB: `familydesk-android-bundle-1.4.2`
+- **Runner:** ubuntu-20.04
 
-## 🗑️ 已刪除的 Workflows
+#### 5. `build-ios.yml` - iOS 构建
+- **支持:** iOS (ARM64)
+- **产物:** `familydesk-ios-1.4.2-unsigned` (.ipa)
+- **注意:** 未签名版本，需要开发者证书才能安装
+- **Runner:** macos-13
 
-以下 workflows 已被刪除，因為它們不適用於 FamilyDesk:
+### 🚀 统一构建
 
-- ❌ `playground.yml` - 使用舊代碼，錯誤功能
-- ❌ `flutter-tag.yml` - Flutter UI 版本
-- ❌ `flutter-build.yml` - Flutter UI 構建
-- ❌ `flutter-nightly.yml` - Flutter 夜間構建
-- ❌ `flutter-ci.yml` - Flutter CI
-- ❌ `ci.yml` - CI 測試
-- ❌ `bridge.yml` - 不相關
-- ❌ `fdroid.yml` - F-Droid 構建
-- ❌ `winget.yml` - Windows 包管理器
-- ❌ `third-party-RustDeskTempTopMostWindow.yml` - 第三方工具
+#### 6. `build-all-platforms.yml` - 所有平台
+- **用途:** 一次性构建所有平台或选择性构建
+- **输入参数:** 选择要构建的平台
+  - `all` - 构建所有平台
+  - `macos,windows,linux` - 只构建桌面平台
+  - `android,ios` - 只构建移动平台
+- **调用其他 workflows**
 
-**現在倉庫中只有:**
-- ✅ `build-familydesk.yml` - FamilyDesk 構建（唯一需要的）
-- ✅ `clear-cache.yml` - 清除緩存工具
+### 🧹 工具
+
+#### 7. `clear-cache.yml` - 清除缓存
+- **用途:** 清除 GitHub Actions 缓存
 
 ---
 
-## 🚀 快速開始
+## 🚀 快速开始
 
-### GitHub 網頁界面
+### 方法 1: 构建单个平台
 
-```
-1. 訪問: https://github.com/[用戶名]/haydendesk/actions
-2. 左側選擇: "Build FamilyDesk"
-3. 右側點擊: "Run workflow"
-4. 選擇分支: main
-5. 點擊: "Run workflow" (綠色按鈕)
-6. 等待完成
-7. 下載 Artifacts
-```
+**步骤:**
+1. 访问 `https://github.com/[用户名]/haydendesk/actions`
+2. 选择要构建的平台:
+   - `Build FamilyDesk - macOS`
+   - `Build FamilyDesk - Windows`
+   - `Build FamilyDesk - Linux`
+   - `Build FamilyDesk - Android`
+   - `Build FamilyDesk - iOS`
+3. 点击 "Run workflow"
+4. 选择分支
+5. 点击绿色 "Run workflow" 按钮
 
-### GitHub CLI
+### 方法 2: 构建所有平台
+
+**步骤:**
+1. 访问 Actions 页面
+2. 选择 `Build FamilyDesk - All Platforms`
+3. 点击 "Run workflow"
+4. 在 "platforms" 输入框中:
+   - 输入 `all` 构建所有平台
+   - 输入 `macos,windows,linux` 只构建桌面版
+   - 输入 `android,ios` 只构建移动版
+5. 点击绿色 "Run workflow" 按钮
+
+### 方法 3: GitHub CLI
 
 ```bash
-# 觸發構建
-gh workflow run build-familydesk.yml
+# 构建 macOS
+gh workflow run build-macos.yml
 
-# 查看狀態
-gh run list --workflow=build-familydesk.yml
+# 构建 Windows
+gh workflow run build-windows.yml
 
-# 監控運行
-gh run watch
+# 构建 Linux
+gh workflow run build-linux.yml
 
-# 下載產物
-gh run download
+# 构建 Android
+gh workflow run build-android.yml
+
+# 构建 iOS
+gh workflow run build-ios.yml
+
+# 构建所有平台
+gh workflow run build-all-platforms.yml -f platforms=all
+
+# 只构建桌面平台
+gh workflow run build-all-platforms.yml -f platforms=macos,windows,linux
 ```
 
 ---
 
-## 🔍 構建步驟說明
+## 📊 平台对比
 
-`build-familydesk.yml` 執行以下步驟:
-
-1. **Checkout source code** - 檢出代碼和子模塊
-2. **Install Rust toolchain** - 安裝 Rust 1.75
-3. **Install build dependencies** - 安裝 glib, gtk+3, cairo, pango, atk, gdk-pixbuf
-4. **Setup vcpkg** - 設置 vcpkg (版本: 120deac3062162151622ca4860575a33844ba10b)
-5. **Set PKG_CONFIG_PATH** - 設置環境變量指向 brew 庫
-6. **Verify pkg-config setup** - 驗證 glib-2.0, gtk+-3.0, cairo 可用
-7. **Install vcpkg dependencies** - 使用 manifest 模式安裝 opus, vpx, yuv 等
-8. **Build FamilyDesk** - 執行 `cargo build --features family_desk --release`
-9. **Verify build** - 驗證生成的可執行文件
-10. **Upload artifact** - 上傳構建產物
+| 平台 | 构建时间 | 产物大小 | 依赖复杂度 | 状态 |
+|------|---------|---------|-----------|------|
+| **macOS** | ~15-30分钟 | ~50MB | 中等 | ✅ 可用 |
+| **Windows** | ~20-35分钟 | ~30MB | 中等 | ✅ 可用 |
+| **Linux** | ~15-25分钟 | ~40MB | 低 | ✅ 可用 |
+| **Android** | ~25-40分钟 | ~20MB (APK) | 高 | ✅ 可用 |
+| **iOS** | ~20-35分钟 | ~30MB | 高 | ⚠️ 未签名 |
 
 ---
 
-## 📊 本地構建 vs GitHub Actions
+## 🔍 各平台构建详情
 
-| 特性 | 本地構建 | GitHub Actions |
-|------|---------|---------------|
-| **速度** | 快（如果已有依賴） | 慢（每次安裝依賴） |
-| **環境** | 需要自己設置 | 自動設置 |
-| **調試** | 容易 | 需要查看日誌 |
-| **適用場景** | 開發測試 | 發布構建 |
-| **配額** | 無限制 | 有月度限制 |
+### macOS 构建
 
-**推薦流程:**
-1. 本地開發和測試 (`./clean-and-build.sh`)
-2. 確認可用後推送到 GitHub
-3. 使用 GitHub Actions 創建發布版本
+**依赖:**
+- Rust 1.75
+- Homebrew (llvm, nasm, pkg-config, glib, gtk+3, cairo)
+- vcpkg (opus, vpx, yuv, aom)
+
+**Features:**
+```bash
+cargo build --features family_desk --release
+```
+
+**验证:**
+- ✅ PKG_CONFIG_PATH 设置
+- ✅ glib-2.0 可用
+- ✅ vcpkg manifest 模式
+
+---
+
+### Windows 构建
+
+**依赖:**
+- Rust 1.75 (MSVC target)
+- LLVM/Clang
+- vcpkg (x64-windows-static triplet)
+
+**Features:**
+```bash
+cargo build --features family_desk --release
+```
+
+**产物:**
+- `rustdesk.exe`
+
+---
+
+### Linux 构建
+
+**依赖:**
+- Rust 1.75
+- GTK3, X11, ALSA, PulseAudio
+- vcpkg (x64-linux triplet)
+
+**Features:**
+```bash
+cargo build --features family_desk --release
+```
+
+**产物:**
+- `rustdesk` (ELF binary)
+- AppDir 结构（可选）
+
+---
+
+### Android 构建
+
+**依赖:**
+- Flutter 3.13.9
+- Android NDK r26b
+- Java 11
+- Rust (Android targets)
+
+**构建:**
+```bash
+flutter build apk --release --target-platform android-arm64
+flutter build appbundle --release
+```
+
+**产物:**
+- `app-release.apk` (直接安装)
+- `app-release.aab` (Google Play)
+
+---
+
+### iOS 构建
+
+**依赖:**
+- Flutter 3.13.9
+- Xcode 15.0
+- CocoaPods
+- Rust (iOS targets)
+
+**构建:**
+```bash
+flutter build ios --release --no-codesign
+```
+
+**产物:**
+- `Runner.app`
+- `FamilyDesk.ipa` (未签名)
+
+**注意:**
+- ⚠️ 需要 Apple Developer 证书才能安装到真机
+- 可用于模拟器测试
+- 正式发布需要签名
 
 ---
 
 ## 🔧 故障排除
 
-### 常見問題
+### macOS
 
-**Q: Workflow 找不到？**
-A: 確保已推送最新代碼到 GitHub，檢查 `.github/workflows/build-familydesk.yml` 文件存在
+**问题:** glib-2.0 找不到
+**解决:** 检查 "Verify pkg-config setup" 步骤
 
-**Q: 構建失敗 - glib-2.0 找不到？**
-A: 檢查 "Verify pkg-config setup" 步驟，應該顯示所有庫都找到
+**问题:** vcpkg manifest 错误
+**解决:** 确保使用正确的 baseline (120deac3...)
 
-**Q: 構建失敗 - opus 相關錯誤？**
-A: 檢查 "Install vcpkg dependencies" 步驟，確保使用 manifest 模式
+### Windows
 
-**Q: 構建時間太長？**
-A: 第一次構建需要編譯 vcpkg 依賴（約 15-30 分鐘），後續構建會快很多
+**问题:** MSVC 链接错误
+**解决:** 确保安装了 Visual Studio Build Tools
 
-**Q: 下載的產物在哪？**
-A: 在 workflow 運行完成後，滾動到頁面底部 "Artifacts" 部分
+**问题:** vcpkg 安装失败
+**解决:** 检查网络连接，重试
+
+### Linux
+
+**问题:** 缺少系统库
+**解决:** 检查 "Install system dependencies" 步骤
+
+### Android
+
+**问题:** NDK 路径错误
+**解决:** 使用 setup-ndk action 自动配置
+
+**问题:** Flutter 构建失败
+**解决:** 检查 pubspec.yaml 依赖
+
+### iOS
+
+**问题:** Pod install 失败
+**解决:** 检查 CocoaPods 版本，清除缓存
+
+**问题:** Xcode 签名错误
+**解决:** 使用 --no-codesign 跳过签名
 
 ---
 
-## 📝 修改 Workflow
+## 📝 修改 Workflows
 
-如果需要修改構建配置，編輯 `build-familydesk.yml`:
+### 添加新的构建步骤
 
-### 修改依賴
+编辑对应平台的 `.yml` 文件:
+
 ```yaml
-- name: Install build dependencies
+- name: 你的新步骤
   run: |
-    brew install llvm nasm pkg-config glib gtk+3 cairo [新依賴]
+    # 你的命令
 ```
 
 ### 修改 Feature Flags
+
+在 "Build FamilyDesk" 步骤中:
+
 ```yaml
 - name: Build FamilyDesk
   run: |
     cargo build --features family_desk,your_feature --release
 ```
 
-### 修改環境變量
+### 添加环境变量
+
+在文件顶部 `env:` 部分:
+
 ```yaml
 env:
-  RUST_VERSION: "1.75"
-  VERSION: "1.4.2"
-  # 添加更多變量...
+  YOUR_VAR: "value"
 ```
 
 ---
 
-## 📚 相關文檔
+## 📚 相关文档
 
-- [WORKFLOW_QUICK_START.md](../../WORKFLOW_QUICK_START.md) - 快速開始指南
-- [GITHUB_ACTIONS_USAGE.md](../../GITHUB_ACTIONS_USAGE.md) - 詳細使用說明
-- [BUILD_TROUBLESHOOTING.md](../../BUILD_TROUBLESHOOTING.md) - 構建問題排查
-- [VCPKG_SETUP.md](../../VCPKG_SETUP.md) - vcpkg 設置指南
+- [WORKFLOW_QUICK_START.md](../../WORKFLOW_QUICK_START.md) - 快速开始
+- [GITHUB_ACTIONS_USAGE.md](../../GITHUB_ACTIONS_USAGE.md) - 详细说明
+- [BUILD_TROUBLESHOOTING.md](../../BUILD_TROUBLESHOOTING.md) - 问题排查
 
 ---
 
-**狀態:** ✅ 簡化完成 - 只保留必要的 workflow
-**最後更新:** 2025-02-10
-**推薦:** 使用 `build-familydesk.yml` 或本地構建
+## 📦 发布流程推荐
+
+1. **开发阶段:** 本地构建测试
+2. **测试阶段:** 单平台 workflow 测试
+3. **预发布:** 使用 `build-all-platforms.yml` 构建所有平台
+4. **发布:** 创建 GitHub Release 并附加产物
+
+---
+
+**状态:** ✅ 支持 5 个平台
+**最后更新:** 2025-02-10
+**推荐:** 使用平台专用 workflow 或 build-all-platforms.yml
