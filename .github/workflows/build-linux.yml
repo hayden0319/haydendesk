@@ -42,11 +42,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             gcc git curl wget nasm yasm \
-            libgtk-3-dev clang libxcb-randr0-dev libxdo-dev \
+            pkg-config libglib2.0-dev libgtk-3-dev \
+            clang libxcb-randr0-dev libxdo-dev \
             libxfixes-dev libxcb-shape0-dev libxcb-xfixes0-dev \
             libasound2-dev libpulse-dev cmake \
             libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-            libpam0g-dev pkg-config
+            libpam0g-dev libcairo2-dev libpango1.0-dev \
+            libatk1.0-dev libgdk-pixbuf2.0-dev
 
       - name: Setup vcpkg
         run: |
@@ -55,6 +57,23 @@ jobs:
           git checkout ${{ env.VCPKG_COMMIT_ID }}
           ./bootstrap-vcpkg.sh
           echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
+
+      - name: Set PKG_CONFIG_PATH
+        run: |
+          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig" >> $GITHUB_ENV
+          echo "✅ PKG_CONFIG_PATH set"
+
+      - name: Verify pkg-config setup
+        run: |
+          echo "🔍 Verifying pkg-config can find libraries..."
+          for lib in glib-2.0 gtk+-3.0; do
+            if pkg-config --exists $lib; then
+              echo "✅ $lib found (version: $(pkg-config --modversion $lib))"
+            else
+              echo "❌ $lib NOT found"
+              exit 1
+            fi
+          done
 
       - name: Install vcpkg dependencies
         run: |
