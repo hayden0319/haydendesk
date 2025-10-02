@@ -1,7 +1,16 @@
-name: RustDesk Multi-version Build
+name: RustDesk Multi-version Build (Legacy - DO NOT USE)
+
+# ⚠️ 此 workflow 已過時，請使用 build-familydesk.yml
+# 此 workflow 嘗試構建不需要的功能，會導致編譯失敗
 
 on:
+  # 只允許手動觸發，防止自動運行
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: '確認使用舊版構建？輸入 YES'
+        required: true
+        default: 'NO'
 
 env:
   RUST_VERSION: "1.75"
@@ -71,6 +80,20 @@ jobs:
             }
 
     steps:
+      - name: "⚠️ 檢查確認"
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "YES" ]; then
+            echo "❌ 錯誤: 此 workflow 已過時"
+            echo "請使用 build-familydesk.yml 替代"
+            echo ""
+            echo "如果您確實需要使用此舊版 workflow："
+            echo "1. 取消此運行"
+            echo "2. 重新觸發並在輸入框中輸入 YES"
+            exit 1
+          fi
+          echo "⚠️ 警告: 您正在使用舊版 workflow"
+          echo "此 workflow 可能會失敗"
+
       - name: "Checkout source code (Current Branch)"
         uses: actions/checkout@v3
         with:
