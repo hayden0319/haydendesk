@@ -345,3 +345,42 @@ cargo build --features hwcodec,flutter,screencapturekit
 ---
 
 **準備好開始構建！** 🚀
+
+---
+
+## 🔄 最新更新 (2025-02-10 補充)
+
+### vcpkg Manifest 模式
+
+**發現：** 項目使用 vcpkg manifest 模式（vcpkg.json）
+
+**影響：**
+- ✅ 依賴自動管理
+- ✅ 版本鎖定（baseline: 120deac3062162151622ca4860575a33844ba10b）
+- ✅ 可重現構建
+
+**正確用法：**
+```bash
+# ❌ 錯誤（傳統模式）
+vcpkg install libvpx libyuv opus aom
+
+# ✅ 正確（manifest 模式）
+cd /Users/hayden/Downloads/haydendesk
+vcpkg install --triplet x64-osx
+```
+
+**文檔：** 詳見 `VCPKG_SETUP.md`
+
+### GitHub Actions 更新
+
+**修復：**
+1. ✅ 更新 actions/upload-artifact v3 → v4
+2. ✅ vcpkg 改為使用 manifest 模式
+3. ✅ 檢出正確的 vcpkg baseline
+4. ✅ 使用正確的 triplet (x64-osx)
+
+**文件：** `.github/workflows/build-familydesk.yml`
+
+---
+
+**最終狀態：** ✅ 所有已知問題已解決，vcpkg 配置正確
