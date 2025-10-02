@@ -43,13 +43,15 @@ jobs:
         run: |
           git clone https://github.com/microsoft/vcpkg
           cd vcpkg
+          git checkout 120deac3062162151622ca4860575a33844ba10b
           ./bootstrap-vcpkg.sh
           echo "VCPKG_ROOT=$PWD" >> $GITHUB_ENV
 
-      - name: Install vcpkg dependencies
+      - name: Install vcpkg dependencies (Manifest Mode)
         run: |
-          cd vcpkg
-          ./vcpkg install libvpx libyuv opus aom
+          # vcpkg.json 已存在，使用 manifest 模式
+          # 不需要手動指定包，vcpkg 會自動讀取 vcpkg.json
+          $VCPKG_ROOT/vcpkg install --triplet x64-osx
 
       - name: Build FamilyDesk (Core Features)
         run: |
