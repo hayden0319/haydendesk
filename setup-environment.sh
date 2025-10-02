@@ -212,7 +212,8 @@ if [[ "$OS" == "macOS" ]]; then
     if ! grep -q "PKG_CONFIG_PATH" "$SHELL_RC" 2>/dev/null; then
         echo "📝 添加 PKG_CONFIG_PATH 到 $SHELL_RC"
         BREW_PREFIX=$(brew --prefix 2>/dev/null || echo "/opt/homebrew")
-        echo "export PKG_CONFIG_PATH=\"$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig\${PKG_CONFIG_PATH:+:\$PKG_CONFIG_PATH}\"" >> "$SHELL_RC"
+        echo "# pkg-config paths - added by FamilyDesk setup" >> "$SHELL_RC"
+        echo "export PKG_CONFIG_PATH=\"$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig:$BREW_PREFIX/opt/glib/lib/pkgconfig:$BREW_PREFIX/opt/gtk+3/lib/pkgconfig:$BREW_PREFIX/opt/cairo/lib/pkgconfig\${PKG_CONFIG_PATH:+:\$PKG_CONFIG_PATH}\"" >> "$SHELL_RC"
         echo "✅ 已添加 PKG_CONFIG_PATH"
     else
         echo "✅ PKG_CONFIG_PATH 已配置"

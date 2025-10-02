@@ -40,8 +40,18 @@ fi
 # 設置 PKG_CONFIG_PATH (macOS)
 if command -v brew &> /dev/null; then
     BREW_PREFIX=$(brew --prefix)
-    export PKG_CONFIG_PATH="$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+    export PKG_CONFIG_PATH="$BREW_PREFIX/lib/pkgconfig:$BREW_PREFIX/share/pkgconfig:$BREW_PREFIX/opt/glib/lib/pkgconfig:$BREW_PREFIX/opt/gtk+3/lib/pkgconfig:$BREW_PREFIX/opt/cairo/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
     echo "✅ PKG_CONFIG_PATH 已設置"
+
+    # 驗證關鍵庫是否可以找到
+    echo "🔍 驗證 pkg-config 庫..."
+    for lib in glib-2.0 gtk+-3.0 cairo; do
+        if pkg-config --exists $lib 2>/dev/null; then
+            echo "   ✅ $lib 可用"
+        else
+            echo "   ⚠️  $lib 不可用"
+        fi
+    done
 fi
 
 # 設置 Rust 環境
