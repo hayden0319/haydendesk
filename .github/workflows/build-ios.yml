@@ -52,6 +52,11 @@ jobs:
         run: |
           cargo install cargo-lipo
 
+      - name: Install build dependencies
+        run: |
+          # 安装可能需要的系统依赖
+          brew install pkg-config || echo "pkg-config already installed"
+
       - name: Install CocoaPods
         run: |
           sudo gem install cocoapods

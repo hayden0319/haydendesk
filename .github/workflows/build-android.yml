@@ -18,6 +18,7 @@ env:
   VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
   NDK_VERSION: "r26b"
   FLUTTER_VERSION: "3.13.9"
+  PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig
 
 jobs:
   build-android:
@@ -66,12 +67,11 @@ jobs:
         with:
           ndk-version: ${{ env.NDK_VERSION }}
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            llvm-dev libclang-dev clang \
-            nasm yasm
+          sudo apt update
+          sudo apt install -y libglib2.0-dev pkg-config \
+            llvm-dev libclang-dev clang nasm yasm
 
       - name: Setup vcpkg
         run: |
