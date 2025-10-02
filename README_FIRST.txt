@@ -16,13 +16,27 @@
 
 📦 快速開始 - 本地構建
 
-  1. 進入目錄
-     cd /Users/hayden/Downloads/haydendesk
+  🆕 方法 1: 一鍵安裝（推薦，適合首次使用）
 
-  2. 運行構建腳本
+     cd /Users/hayden/Downloads/haydendesk
+     ./setup-environment.sh
+     # 此腳本會自動安裝：
+     # - Rust
+     # - 系統依賴（llvm, nasm等）
+     # - vcpkg 及其依賴
+     # - 配置環境變量
+
+     然後運行：
+     source ~/.bashrc  # 或 ~/.zshrc
      ./build-familydesk.sh
 
-  3. 測試運行
+  方法 2: 手動構建（已有環境）
+
+     cd /Users/hayden/Downloads/haydendesk
+     ./build-familydesk.sh
+
+  方法 3: 測試運行
+
      RUST_LOG=info ./target/release/rustdesk
 
 ================================================================================
