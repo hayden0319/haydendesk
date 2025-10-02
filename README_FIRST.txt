@@ -2,15 +2,16 @@
                     🎯 FamilyDesk - 開始之前必讀
 ================================================================================
 
-問題: GitHub Actions 編譯失敗 (缺少 mac-tray-dark-x2.png)
+⚠️  重要：GitHub Actions Workflow 選擇
 
-原因: 
-  - playground.yml 使用舊的 commit ref
-  - 嘗試構建不需要的功能 (hwcodec, flutter)
+  ✅ 正確: build-familydesk.yml
+  ❌ 錯誤: flutter-tag.yml, playground.yml, flutter-build.yml
+
+  詳細說明: WORKFLOW_QUICK_START.md
 
 解決方案:
-  ✅ 使用本地構建（推薦）
-  ✅ 使用新的 GitHub Actions workflow
+  ✅ 使用本地構建（推薦）- ./clean-and-build.sh
+  ✅ 使用 build-familydesk.yml workflow
 
 ================================================================================
 
