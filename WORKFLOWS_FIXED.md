@@ -2,17 +2,53 @@
 
 ## 🔧 问题描述
 
+### 问题 1: PKG_CONFIG_PATH 未设置
 构建失败，错误信息：
 ```
 The system library `glib-2.0` required by crate `glib-sys` was not found.
 The PKG_CONFIG_PATH environment variable is not set.
 ```
 
+### 问题 2: Rust 版本过低（iOS/macOS）
+cargo-lipo 安装失败：
+```
+package `addr2line v0.25.1` cannot be built because it requires rustc 1.81 or newer,
+while the currently active rustc version is 1.75.0
+```
+
+### 问题 3: 缺少图标文件
+构建时找不到图标：
+```
+error: couldn't read `src/../res/mac-tray-dark-x2.png`: No such file or directory
+```
+**原因**: `.gitignore` 中的 `*png` 规则忽略了所有 PNG 文件，包括 `res/` 目录中的必需图标
+
 ## ✅ 解决方案
 
-**双重保险策略**：既使用 `>> $GITHUB_ENV` 设置全局环境变量，又在构建步骤中 `export` 确保 cargo 子进程可以访问。
+### 解决方案 1: PKG_CONFIG_PATH - 双重保险策略
+既使用 `>> $GITHUB_ENV` 设置全局环境变量，又在构建步骤中 `export` 确保 cargo 子进程可以访问。
 
-### 修复前（❌ 不工作）:
+### 解决方案 2: Rust 版本升级
+- iOS: 1.75 → 1.81
+- macOS: 1.75 → 1.81
+- 其他平台保持 1.75
+
+### 解决方案 3: 修复 .gitignore
+在 `.gitignore` 中添加例外规则：
+```gitignore
+*png
+!res/*.png      # 允许 res/ 目录下的 PNG 文件
+*svg
+!res/*.svg      # 允许 res/ 目录下的 SVG 文件
+*jpg
+!res/*.jpg      # 允许 res/ 目录下的 JPG 文件
+```
+
+---
+
+## 📝 详细修复步骤
+
+### PKG_CONFIG_PATH 修复前（❌ 不工作）:
 ```yaml
 - name: Build
   run: |
@@ -20,7 +56,7 @@ The PKG_CONFIG_PATH environment variable is not set.
     cargo build --release
 ```
 
-### 修复后（✅ 工作）:
+### PKG_CONFIG_PATH 修复后（✅ 工作）:
 ```yaml
 - name: Set build environment
   run: |
